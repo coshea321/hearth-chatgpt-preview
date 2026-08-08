@@ -2019,7 +2019,7 @@ function mergeTombs(a, b){ var o = {}; [a,b].forEach(function(t){ Object.keys(t|
 function babyMedicineTs(entry){ return entry ? (entry.updated || entry.id || 0) : 0; }
 // Shared by personal and household Baby sync. Concurrent additions survive;
 // medicine corrections use newest-wins plus 90-day deletion tombstones.
-function mergeBabyData(local, remote, medTombs){
+function mergeBabyData(local, remote, medTombs, mode){
   local = local && typeof local === "object" ? local : {};
   remote = remote && typeof remote === "object" ? remote : {};
   medTombs = medTombs && typeof medTombs === "object" ? medTombs : {};
@@ -2048,20 +2048,28 @@ function mergeBabyData(local, remote, medTombs){
     mergedMedicine.push(m);
   });
   mergedMedicine.sort(function(a,b){ return (b.id||0)-(a.id||0); });
+  var backupMode = mode === "backup", remoteFieldsWin = mode === "household" || backupMode;
   var merged = {
     growth: simpleUnion(local.growth, remote.growth, "date"),
     medicine: mergedMedicine,
     milestones: simpleUnion(local.milestones, remote.milestones, "id"),
     teeth: Object.assign({}, local.teeth||{}, remote.teeth||{}),
-    bags: Array.isArray(remote.bags) ? remote.bags : local.bags
+    bags: backupMode
+      ? ((Array.isArray(remote.bags) && remote.bags.length) ? remote.bags : local.bags)
+      : (Array.isArray(remote.bags) ? remote.bags : local.bags)
   };
   Object.keys(local.teeth||{}).forEach(function(k){ if (!(k in (remote.teeth||{}))) push = true; });
-  if (!Array.isArray(remote.bags) && Array.isArray(local.bags)) push = true;
+  if (!backupMode && !Array.isArray(remote.bags) && Array.isArray(local.bags)) push = true;
   Object.keys(local).concat(Object.keys(remote)).forEach(function(k){
     if (k in merged) return;
     var lv = local[k], rv = remote[k];
-    if (lv === undefined || lv === null || lv === "") merged[k] = rv !== undefined ? rv : lv;
-    else { merged[k] = lv; if (rv === undefined || rv === null || rv === "") push = true; }
+    if (remoteFieldsWin && rv !== undefined) merged[k] = rv;
+    else if (lv === undefined || lv === null || lv === "") merged[k] = rv !== undefined ? rv : lv;
+    else {
+      merged[k] = lv;
+      if (!remoteFieldsWin && JSON.stringify(lv) !== JSON.stringify(rv)) push = true;
+      else if (remoteFieldsWin && rv === undefined) push = true;
+    }
   });
   return { data:merged, push:push };
 }
@@ -6745,7 +6753,7 @@ function importBackupData(data) {
     var bd=getBD(),bd2=data.baby;
     // Treat the current device as authoritative on same legacy keys, while
     // still unioning backup-only records. Active medicine tombstones win.
-    var backupBabyMerge=mergeBabyData(bd2,bd,getTombs("med"));
+    var backupBabyMerge=mergeBabyData(bd2,bd,getTombs("med"),"backup");
     saveBD(backupBabyMerge.data);
   }
   if(Array.isArray(data.action_log)){var al=getActionLog(),alIds={};al.forEach(function(x){alIds[x.id]=true;});var newAl=data.action_log.filter(function(x){return x&&!alIds[x.id];});if(newAl.length)storeSet("fl4_action_log",newAl.concat(al));}
@@ -7666,7 +7674,7 @@ function applyPersonal(d) {
   if ((d.baby && typeof d.baby === "object") || (d.med_deleted && typeof d.med_deleted === "object")) {
     var medTombsP = mergeTombs(getTombs("med"), (d.med_deleted && typeof d.med_deleted === "object") ? d.med_deleted : {});
     storeSet("fl4_tomb_med", purgeTombs(medTombsP));
-    var babyMergeP = mergeBabyData(getBD(), (d.baby && typeof d.baby === "object") ? d.baby : {}, medTombsP);
+    var babyMergeP = mergeBabyData(getBD(), (d.baby && typeof d.baby === "object") ? d.baby : {}, medTombsP, "personal");
     storeSet("fl4_baby", babyMergeP.data);
     if (currentSection === "baby") renderBabyView();
     if (babyMergeP.push) setTimeout(function(){ if (isLoggedIn()) pushPersonal(); }, 0);
@@ -10995,7 +11003,7 @@ function applyHousehold(data) {
   if (isSynced("baby") && ((data["baby"] && typeof data["baby"] === "object") || (data["med_deleted"] && typeof data["med_deleted"] === "object"))) {
     var medTombsH = mergeTombs(getTombs("med"), (data["med_deleted"] && typeof data["med_deleted"] === "object") ? data["med_deleted"] : {});
     storeSet("fl4_tomb_med", purgeTombs(medTombsH));
-    var babyMergeH = mergeBabyData(getBD(), (data["baby"] && typeof data["baby"] === "object") ? data["baby"] : {}, medTombsH);
+    var babyMergeH = mergeBabyData(getBD(), (data["baby"] && typeof data["baby"] === "object") ? data["baby"] : {}, medTombsH, "household");
     storeSet("fl4_baby", babyMergeH.data);
     if (currentSection === "baby") renderBabyView();
     if (babyMergeH.push) setTimeout(function(){ if (isHouseholdSet()) pushHousehold(); }, 0);
