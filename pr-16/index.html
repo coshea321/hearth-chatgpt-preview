@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
-  <meta name="hearth-preview-revision" content="dcd491dc4f19dea5844869087c58e04e9beb123c">
+  <meta name="hearth-preview-revision" content="feb277e300c254f7a8e13c6583e4fc0ae9dc4231">
   <title>Hearth phone preview</title>
   <style>
     * { box-sizing: border-box; }
@@ -16,6 +16,7 @@
       justify-content: space-between; gap: 8px; color: #fff; background: #61451f;
       font-size: 12px; font-weight: 700; line-height: 1.25;
     }
+    #previewControls { display: flex; gap: 6px; }
     #previewNotice button {
       min-width: 44px; min-height: 44px; border: 1px solid rgba(255,255,255,.65);
       border-radius: 8px; color: #fff; background: transparent; font: inherit; cursor: pointer;
@@ -26,12 +27,19 @@
 </head>
 <body>
   <div id="previewNotice" role="status">
-    <span>PHONE PREVIEW · synthetic test data only · sync and external connections blocked · dcd491d</span>
-    <button type="button" aria-label="Hide preview notice">Hide</button>
+    <span>PHONE PREVIEW · temporary demo data · resets on reload · real Hearth data isolated · feb277e</span>
+    <span id="previewControls">
+      <button id="previewReset" type="button">Reset demo</button>
+      <button id="previewHide" type="button" aria-label="Hide preview notice">Hide</button>
+    </span>
   </div>
-  <iframe title="Hearth phone preview" src="./_hearth-preview/index.html?v=dcd491dc4f19dea5844869087c58e04e9beb123c"></iframe>
+  <iframe title="Hearth phone preview" sandbox="allow-scripts" referrerpolicy="no-referrer" src="./_hearth-preview/index.html?v=feb277e300c254f7a8e13c6583e4fc0ae9dc4231"></iframe>
   <script>
-    document.querySelector('#previewNotice button').addEventListener('click', function () {
+    var previewFrame = document.querySelector('iframe');
+    document.querySelector('#previewReset').addEventListener('click', function () {
+      previewFrame.src = previewFrame.src;
+    });
+    document.querySelector('#previewHide').addEventListener('click', function () {
       document.body.classList.add('notice-hidden');
     });
   </script>

@@ -3,6 +3,73 @@
 <head>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+<script>(function () {
+    var now = Date.now();
+    var pad = function (value) { return value < 10 ? '0' + value : String(value); };
+    var day = function (offset) {
+      var date = new Date();
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() + offset);
+      return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+    };
+    var demo = {
+      fl4_grocery: { items: [
+        { id: now - 1100, name: 'Demo milk', catId: 'dairy', done: false, addedBy: 'demo', updated: now - 1100 },
+        { id: now - 1200, name: 'Demo bananas', catId: 'produce', done: false, addedBy: 'demo', updated: now - 1200 },
+        { id: now - 1300, name: 'Demo pasta', catId: 'other', done: true, addedBy: 'demo', updated: now - 1300 }
+      ], hist: [] },
+      fl4_todo: { items: [
+        { id: now - 2100, name: 'Demo book dentist', catId: 'other', done: false, addedBy: 'demo', updated: now - 2100 },
+        { id: now - 2200, name: 'Demo return library books', catId: 'other', done: true, addedBy: 'demo', updated: now - 2200 }
+      ], hist: [] },
+      fl4_personal: { items: [
+        { id: now - 3100, name: 'Demo evening walk', catId: 'other', done: false, addedBy: 'demo', updated: now - 3100 }
+      ], hist: [] },
+      fl4_travel: { items: [
+        { id: now - 4100, name: 'Demo passports', catId: 'other', done: false, tags: ['Demo holiday'], addedBy: 'demo', updated: now - 4100, packing: { mode: 'people', assigned: { cathal: true, petra: true, daughter: true }, completed: { cathal: true, petra: false, daughter: false } } },
+        { id: now - 4200, name: 'Demo phone charger', catId: 'other', done: false, tags: ['Demo holiday'], addedBy: 'demo', updated: now - 4200, packing: { mode: 'shared', done: false } }
+      ], hist: [] },
+      fl4_travel_tags: ['Demo holiday'],
+      fl4_recipebook: [{
+        id: 91001, name: 'Demo tomato pasta', servings: 4, category: 'Demo favourites', fav: true, updated: now - 5000,
+        ingredients: [
+          { amount: 400, unit: 'g', name: 'pasta' },
+          { amount: 1, unit: 'can', name: 'chopped tomatoes' },
+          { amount: 2, unit: 'clove', name: 'garlic' }
+        ],
+        method: 'Cook the pasta. Warm the tomatoes and garlic, then combine.',
+        notes: 'DEMO DATA — not a real family recipe.'
+      }],
+      fl4_mealplan: [{ day: day(1), recipeId: 91001, servings: 4, updated: now - 4900, addedBy: 'demo' }],
+      fl4_trips: [{
+        id: 92001, name: 'Demo weekend in Galway', start: day(12), end: day(14), updated: now - 6000,
+        bookings: [{ id: 92002, type: 'hotel', title: 'Demo hotel', start: day(12) + 'T15:00', end: day(14) + 'T11:00', location: 'Galway', ref: 'DEMO-123', notes: 'Synthetic booking only', updated: now - 5900 }]
+      }],
+      fl4_notes_global: [{ id: 'demo-personal-note', title: 'Demo weekend jobs', body: '<p>Check the smoke alarms and water the plants.</p>', createdAt: now - 7200000, updatedAt: now - 7200000 }],
+      fl4_notes_global_work: [{ id: 'demo-work-note', title: 'Demo work priorities', body: '<p>Prepare the weekly update.</p>', createdAt: now - 10800000, updatedAt: now - 10800000 }],
+      fl4_action_log: [{ id: now - 7000, text: 'Demo family walk completed', ts: now - 7000 }],
+      fl4_workouts: { workouts: [{ id: 93001, date: day(0), type: 'workout', sessionName: 'Demo strength session', exercises: [{ name: 'Demo squat', sets: [{ weight: 20, reps: 8, done: true }] }] }], bodyweight: [] },
+      fl4_baby: { growth: [{ date: day(-7), weight: 10.2, height: 78, note: 'DEMO — synthetic measurement' }], medicine: [], milestones: [{ id: 94001, date: day(-2), text: 'Demo first steps' }], teeth: {}, bags: [] },
+      fl4_secVisible: { home: true, train: false, trips: true, sports: false, activity: true },
+      fl4_trainNavMigrated: true,
+      fl4_syncPrefs: { grocery: false, todo: false, travel: false, personal: false, notes: false, baby: false }
+    };
+    var makeStorage = function (initial) {
+      var values = new Map();
+      Object.keys(initial || {}).forEach(function (key) { values.set(key, JSON.stringify(initial[key])); });
+      return {
+        get length() { return values.size; },
+        clear: function () { values.clear(); },
+        getItem: function (key) { key = String(key); return values.has(key) ? values.get(key) : null; },
+        key: function (index) { return Array.from(values.keys())[index] || null; },
+        removeItem: function (key) { values.delete(String(key)); },
+        setItem: function (key, value) { values.set(String(key), String(value)); }
+      };
+    };
+    Object.defineProperty(window, 'localStorage', { configurable: false, value: makeStorage(demo) });
+    Object.defineProperty(window, 'sessionStorage', { configurable: false, value: makeStorage({}) });
+    Object.defineProperty(window, '__HEARTH_PREVIEW_STORAGE__', { configurable: false, value: 'temporary-demo' });
+  }());</script>
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
