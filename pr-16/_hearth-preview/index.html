@@ -50,6 +50,15 @@
       fl4_action_log: [{ id: now - 7000, text: 'Demo family walk completed', ts: now - 7000 }],
       fl4_workouts: { workouts: [{ id: 93001, date: day(0), type: 'workout', sessionName: 'Demo strength session', exercises: [{ name: 'Demo squat', sets: [{ weight: 20, reps: 8, done: true }] }] }], bodyweight: [] },
       fl4_baby: { growth: [{ date: day(-7), weight: 10.2, height: 78, note: 'DEMO — synthetic measurement' }], medicine: [], milestones: [{ id: 94001, date: day(-2), text: 'Demo first steps' }], teeth: {}, bags: [] },
+      hearthWeather: {
+        temp: 14, hum: 72, feels: 13, code: 2, high: 17, low: 10, pop: 25, loc: 'Demo weather', at: now,
+        days: [
+          { date: day(0), code: 2, hi: 17, lo: 10, pop: 25, wind: 14 },
+          { date: day(1), code: 1, hi: 18, lo: 11, pop: 15, wind: 12 },
+          { date: day(2), code: 61, hi: 15, lo: 9, pop: 60, wind: 18 }
+        ],
+        hours: [{ time: new Date(now).toISOString(), temp: 14, code: 2, pop: 20 }]
+      },
       fl4_secVisible: { home: true, train: false, trips: true, sports: false, activity: true },
       fl4_trainNavMigrated: true,
       fl4_syncPrefs: { grocery: false, todo: false, travel: false, personal: false, notes: false, baby: false }
@@ -68,6 +77,11 @@
     };
     Object.defineProperty(window, 'localStorage', { configurable: false, value: makeStorage(demo) });
     Object.defineProperty(window, 'sessionStorage', { configurable: false, value: makeStorage({}) });
+    Object.defineProperty(window, 'fetch', {
+      configurable: false,
+      value: function () { return Promise.reject(new TypeError('Preview network disabled')); }
+    });
+    Object.defineProperty(navigator, 'geolocation', { configurable: false, value: undefined });
     Object.defineProperty(window, '__HEARTH_PREVIEW_STORAGE__', { configurable: false, value: 'temporary-demo' });
   }());</script>
 <meta charset="UTF-8">
