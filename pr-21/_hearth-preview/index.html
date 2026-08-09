@@ -8647,7 +8647,7 @@ window.addEventListener("DOMContentLoaded", function() {
         existing._recipeAdded = false;            // pre-existed: restore, don't delete
         if (existing.done) {
           existing.done = false; // un-check from Done/Packed
-          addToHistFor(lt, clean, existing.catId || detectCat(clean));
+          addToHistFor(currentList, clean, existing.catId || detectCat(clean));
         }
         if (tag) existing.catId = detectCat(clean); // recipe's category wins
         tagged++;
