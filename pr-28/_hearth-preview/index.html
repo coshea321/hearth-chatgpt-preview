@@ -19,7 +19,7 @@
         { id: now - 1300, name: 'Demo pasta', catId: 'other', done: true, addedBy: 'demo', updated: now - 1300 }
       ], hist: [] },
       fl4_todo: { items: [
-        { id: now - 2100, name: 'Demo book dentist', catId: 'other', done: false, addedBy: 'demo', updated: now - 2100 },
+        { id: now - 2100, name: 'Demo book dentist', catId: 'other', done: false, link: 'https://example.com/', addedBy: 'demo', updated: now - 2100 },
         { id: now - 2200, name: 'Demo return library books', catId: 'other', done: true, addedBy: 'demo', updated: now - 2200 }
       ], hist: [] },
       fl4_personal: { items: [
@@ -4645,14 +4645,19 @@ function renderList() {
   for (var i=0;i<items.length;i++){
     ((currentList === "travel" ? packingOverallDone(items[i]) : items[i].done) ? done : active).push(items[i]);
   }
-  // Find names that appear more than once across ALL items (active + done)
-  var _nameCounts = {}, _dupNames = {};
+  // Find genuinely duplicated names across ALL items (active + done). Normal
+  // occurrences from one recurring series deliberately share a name, so they
+  // are one logical identity for this warning rather than false duplicates.
+  var _nameIdentities = {}, _dupNames = {};
   getItems().forEach(function(it){
     if (!it) return;
     var k = (it.name||"").trim().toLowerCase();
-    _nameCounts[k] = (_nameCounts[k]||0) + 1;
+    if (!_nameIdentities[k]) _nameIdentities[k] = {};
+    var seriesId = it.recurrence && it.recurrence.seriesId;
+    var identity = seriesId != null ? "repeat:" + String(seriesId) : "item:" + String(it.id);
+    _nameIdentities[k][identity] = true;
   });
-  Object.keys(_nameCounts).forEach(function(k){ if (_nameCounts[k] > 1) _dupNames[k] = true; });
+  Object.keys(_nameIdentities).forEach(function(k){ if (Object.keys(_nameIdentities[k]).length > 1) _dupNames[k] = true; });
   window._dupNames = _dupNames;
   if (currentSection === "lists" && active.length) { elHdrBadge.textContent=active.length+" item"+(active.length!==1?"s":""); elHdrBadge.style.display="block"; }
   else { elHdrBadge.style.display="none"; }
@@ -8550,11 +8555,14 @@ function openItemSheet(itemId, trigger) {
 
   document.getElementById("itemSheet").style.display         = "block";
   document.getElementById("itemSheetBackdrop").style.display = "block";
+  document.getElementById("itemSheet").scrollTop = 0;
   document.body.style.overflow = "hidden";
   if (itemSheetDialogFocus) itemSheetDialogFocus.release(false);
   itemSheetDialogFocus = setupDialogFocus(document.getElementById("itemSheet"), {
     trigger: trigger,
-    initialFocus: "#itemSheetNameInput",
+    // Keep the sheet keyboard closed on phones: focus a non-text control,
+    // while still placing accessible dialog focus inside the open sheet.
+    initialFocus: "#itemSheetClose",
     cancellable: true,
     onEscape: closeItemSheet,
     restoreFallback: '.type-btn[data-lt="' + currentList + '"]'

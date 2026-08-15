@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
-  <meta name="hearth-preview-revision" content="2f1c4f01bb3c6163857c2b6f8826ab89159ef715">
+  <meta name="hearth-preview-revision" content="12f997be41e8b536cb5d555be5db9b9fbca5112b">
   <title>Hearth phone preview</title>
   <style>
     * { box-sizing: border-box; }
@@ -27,15 +27,17 @@
 </head>
 <body>
   <div id="previewNotice" role="status">
-    <span>PHONE PREVIEW · temporary demo data · resets on reload · real Hearth data isolated · 2f1c4f0</span>
+    <span>PHONE PREVIEW · temporary demo data · resets on reload · real Hearth data isolated · 12f997b</span>
     <span id="previewControls">
       <button id="previewReset" type="button">Reset demo</button>
       <button id="previewHide" type="button" aria-label="Hide preview notice">Hide</button>
     </span>
   </div>
-  <iframe title="Hearth phone preview" sandbox="allow-scripts" referrerpolicy="no-referrer" src="./_hearth-preview/index.html?v=2f1c4f01bb3c6163857c2b6f8826ab89159ef715"></iframe>
+  <iframe title="Hearth phone preview" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
   <script>
     var previewFrame = document.querySelector('iframe');
+    previewFrame.sandbox.add("allow-popups");
+    previewFrame.src = "./_hearth-preview/index.html?v=12f997be41e8b536cb5d555be5db9b9fbca5112b";
     document.querySelector('#previewReset').addEventListener('click', function () {
       previewFrame.src = previewFrame.src;
     });
