@@ -4304,6 +4304,13 @@ function openRecipeDuplicateRepair() {
       g.items.forEach(function(x){var u=usage[String(x.recipe.id)];if(u&&(!newest||u.updated>newest.updated))newest=u;});
       var rejectIndexes={};g.items.forEach(function(x){if(x.index!==keep.index)rejectIndexes[x.index]=true;});rb=rb.filter(function(_,idx){return !rejectIndexes[idx];});
       g.items.forEach(function(x){if(x.index===keep.index)return;if(String(x.recipe.id)!==String(keep.recipe.id)){addTomb("recipes",x.recipe.id);delete usage[String(x.recipe.id)];}});
+      // A same-ID duplicate can leave a newer rejected copy on another device.
+      // Stamp the chosen copy so the normal newest-wins recipe merge converges
+      // on the user's explicit choice without tombstoning the ID we kept.
+      if(g.type==="Repeated ID") {
+        var keptInBook=rb.find(function(x){return String(x.id)===String(keep.recipe.id);});
+        if(keptInBook) keptInBook.updated=Date.now();
+      }
       if(useHistory&&newest){usage[String(keep.recipe.id)]=Object.assign({},newest,{updated:Date.now()});}storeSet("fl4_recipe_usage",usage);saveRecipeBook(rb);close();renderRecipes();toast("Duplicate repaired — kept "+esc(keep.recipe.name||"recipe"));};});
 }
 
